@@ -7,20 +7,20 @@ describe SimpleAOP do
     before(:each) do
       @aop = AOPClass.new
     end
-  
+      
     it "should create ad hoc filters for other methods" do 
       @aop.should_receive(:other_before_filter).once.ordered
       @aop.should_receive(:other_after_filter).once.ordered
       @aop.other_method
     end
-  
+      
     it "should create around filters" do
       @aop.should_receive(:before_around).once.ordered
       @aop.should_receive(:middle).once.ordered
       @aop.should_receive(:after_around).once.ordered
       @aop.other_method
     end
-  
+      
     it "should take an array for around filters" do 
       @aop.should_receive(:before_around).once.ordered
       @aop.should_receive(:middle).once.ordered
@@ -32,30 +32,50 @@ describe SimpleAOP do
       @aop.should_receive(:after_around).once.ordered
       @aop.test_two
     end
-  
+      
     it "should take an array of methods for a before filter" do
       @aop.should_receive(:before_filter)
       @aop.test_one
-
+    
       @aop.should_receive(:before_filter)
       @aop.test_two
       @aop.should_receive(:before_filter)
       @aop.test_three
     end
-  
+      
     it "should take an array of methods for an after filter" do 
       @aop.should_receive(:after_filter)
       @aop.test_one
-
+    
       @aop.should_receive(:after_filter)
       @aop.test_two
-
+    
       @aop.should_receive(:after_filter)
       @aop.test_three
     end 
     
-    it "should maintain the binding context of the original method" do
+    it "should fire before, after and around filters in the correct order for the same method" do
+
+      @aop.should_receive(:all_for_one).once.ordered
+      @aop.should_receive(:before_around).once.ordered
+      @aop.should_receive(:middle)
+      @aop.should_receive(:after_around).once.ordered  
+      @aop.should_receive(:all_for_two).once.ordered      
+
+      @aop.test_all
+    end
+    
+    it "should maintain the binding context of the original method when used with any/all filters" do
+      @aop.should_receive(:test_one).once.ordered
+      @aop.should_receive(:test_two).once.ordered
       @aop.test_binding.should == "local test value"
+    end
+    
+    it "should execute any block given to a filtered method with a yield" do
+      @aop.should_receive(:test_one)
+      @aop.yield_method do 
+        "test"
+      end.should == "test"
     end
     
   end
@@ -78,6 +98,14 @@ class AOPClass
   around :with_args, :args_around_filter
   
   before :test_binding, :test_one
+  after :test_binding, :test_two
+  around :test_binding, :around_filter
+  
+  before :test_all, :all_for_one
+  after :test_all, :all_for_two
+  around :test_all, :around_filter
+  
+  before :yield_method, :test_one
   
   def initialize
     @local_value = "local test value"
@@ -85,8 +113,12 @@ class AOPClass
   
   attr_accessor :local_value
   
+  def yield_method
+    yield
+  end
+  
   def test_binding
-    return local_value
+    local_value
   end
   
   def with_args(hash)
@@ -96,15 +128,19 @@ class AOPClass
     yield
   end
   
+  def test_all; middle;  end
+  
   def around_filter
     before_around
-    yield if block_given?
+    value = yield if block_given?
     after_around
+    value
   end
   
   def before_around; end
   def after_around; end
-  
+  def all_for_one; end
+  def all_for_two; end
   def test_one
     middle
   end
