@@ -1,0 +1,5 @@
+   SimpleAOP was cribbed and adapted from bits of DataMapper's callbacks/filters and this StackOverflow post: 
+   http://stackoverflow.com/questions/1677861/how-to-implement-a-callback-in-ruby
+
+
+   More docs forthcoming. 
