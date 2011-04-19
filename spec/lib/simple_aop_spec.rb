@@ -193,11 +193,6 @@ class AOPClass
   def other_after_filter;end
   
   def lots_o_filters; end
-  def create;end
-  def update;end
-  
-  def query;end
-  def delete;end
   
   def before_filter;end
   def after_filter;end
