@@ -54,6 +54,10 @@ describe SimpleAOP do
       @aop.test_three
     end 
     
+    it "should maintain the binding context of the original method" do
+      @aop.test_binding.should == "local test value"
+    end
+    
   end
 end
 
@@ -72,6 +76,18 @@ class AOPClass
   around [:test_one, :test_two], :around_filter
   
   around :with_args, :args_around_filter
+  
+  before :test_binding, :test_one
+  
+  def initialize
+    @local_value = "local test value"
+  end
+  
+  attr_accessor :local_value
+  
+  def test_binding
+    return local_value
+  end
   
   def with_args(hash)
   end
