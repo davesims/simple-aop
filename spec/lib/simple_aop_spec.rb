@@ -16,6 +16,7 @@ describe SimpleAOP do
   
     it "should create around filters" do
       @aop.should_receive(:before_around).once.ordered
+      @aop.should_receive(:middle).once.ordered
       @aop.should_receive(:after_around).once.ordered
       @aop.other_method
     end
@@ -97,7 +98,10 @@ class AOPClass
   end
   
   def test_three;end
-  def other_method;end
+  def other_method
+    middle
+  end
+  
   def other_before_filter;end
   def other_after_filter;end
   def not_an_adapter;end
