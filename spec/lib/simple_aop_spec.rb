@@ -58,7 +58,7 @@ describe SimpleAOP do
 
       @aop.should_receive(:all_for_one).once.ordered
       @aop.should_receive(:before_around).once.ordered
-      @aop.should_receive(:middle)
+      @aop.should_receive(:middle).once.ordered
       @aop.should_receive(:after_around).once.ordered  
       @aop.should_receive(:all_for_two).once.ordered      
 
