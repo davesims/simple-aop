@@ -4,22 +4,6 @@ module SimpleAOP
     klass.extend ClassMethods
     klass.initialize_included_features
   end
-
-  def trigger_callbacks(method_name, callback_type) 
-    case callback_type
-    when :before then self.class.callbacks[:before][method_name.to_sym].each{|callback| send callback}
-    when :after then self.class.callbacks[:after][method_name.to_sym].each{|callback| send callback}
-    end
-  end
-  
-  def trigger_around_callback(method_name, &block)
-    callback = self.class.callbacks[:around][method_name.to_sym]
-    if callback && callback != []
-      send(callback) { block.call }
-    else
-      yield
-    end
-  end
   
   module ClassMethods
     
@@ -54,7 +38,7 @@ module SimpleAOP
       if original_method.kind_of?(Array)
         original_method.each {|method| store_callbacks(type, method, *callbacks) }
       else
-        store_callbacks(:before, original_method, *callbacks)
+        store_callbacks(type, original_method, *callbacks)
       end
     end
     
@@ -90,15 +74,33 @@ module SimpleAOP
       mod.class_eval do
         define_method(original_method.to_sym) do |*args, &block|
           trigger_callbacks(original_method, :before)
-          trigger_around_callback(original_method) do
+          return_value = trigger_around_callback(original_method) do
             original.bind(self).call(*args, &block) if original
           end
           trigger_callbacks(original_method, :after)
+          return_value
         end
       end
       include mod
     end
   end
+  
+  def trigger_callbacks(method_name, callback_type) 
+    case callback_type
+    when :before then self.class.callbacks[:before][method_name.to_sym].each{|callback| send callback}
+    when :after then self.class.callbacks[:after][method_name.to_sym].each{|callback| send callback}
+    end
+  end
+
+  def trigger_around_callback(method_name, &block)
+    callback = self.class.callbacks[:around][method_name.to_sym]
+    if callback && callback != []
+      return send(callback) { block.call }
+    else
+      return yield
+    end
+  end
+ 
 end
 
 

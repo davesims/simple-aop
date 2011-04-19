@@ -62,7 +62,7 @@ describe SimpleAOP do
       @aop.should_receive(:after_around).once.ordered  
       @aop.should_receive(:all_for_two).once.ordered      
 
-      @aop.test_all
+      @aop.test_all.should == "local test value"
     end
     
     it "should maintain the binding context of the original method when used with any/all filters" do
@@ -76,6 +76,23 @@ describe SimpleAOP do
       @aop.yield_method do 
         "test"
       end.should == "test"
+    end
+    
+    it "should pass the correct arguments to the filtered method" do 
+      @aop.with_args({:fu => :bar}).should == {:fu => :bar}
+      # with different arity
+      @aop.with_args_array(1,2,3,4).should == [1,2,3,4]
+      # and a default value
+      @aop.with_default_arg("fu").should == "fu bar"
+    end
+    
+    it "should handle multiple filters" do 
+      @aop.should_receive(:test_one).once.ordered
+      @aop.should_receive(:test_two).once.ordered
+      @aop.should_receive(:test_three).once.ordered
+      @aop.should_receive(:test_four).once.ordered
+      @aop.should_receive(:test_five).once.ordered
+      @aop.lots_o_filters
     end
     
   end
@@ -106,6 +123,14 @@ class AOPClass
   around :test_all, :around_filter
   
   before :yield_method, :test_one
+  before :with_default_arg, :test_one
+  after :with_args_array, :test_two
+  
+  before :lots_o_filters, :test_one
+  before :lots_o_filters, :test_two
+  before :lots_o_filters, :test_three
+  after :lots_o_filters, :test_four
+  after :lots_o_filters, :test_five
   
   def initialize
     @local_value = "local test value"
@@ -121,14 +146,23 @@ class AOPClass
     local_value
   end
   
+  def with_args_array(*args)
+    args
+  end
+  
+  def with_default_arg(fu, bar="bar")
+    "#{fu} #{bar}"
+  end
+  
   def with_args(hash)
+    hash
   end
   
   def args_around_filter
     yield
   end
   
-  def test_all; middle;  end
+  def test_all; middle;  return @local_value; end
   
   def around_filter
     before_around
@@ -153,11 +187,12 @@ class AOPClass
   def other_method
     middle
   end
-  
+  def test_four; end
+  def test_five; end
   def other_before_filter;end
   def other_after_filter;end
-  def not_an_adapter;end
   
+  def lots_o_filters; end
   def create;end
   def update;end
   
