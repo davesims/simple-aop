@@ -11,7 +11,7 @@ module SimpleAOP
       @callbacks = Hash.new
       @callbacks[:before] = Hash.new{|h,k| h[k] = []}
       @callbacks[:after] = @callbacks[:before].clone
-      @callbacks[:around] = {}
+      @callbacks[:around] = @callbacks[:before].clone
       
       class << self
         attr_accessor :callbacks
@@ -50,12 +50,13 @@ module SimpleAOP
       process_callback_set(:after, original_method, *callbacks)
     end
     
-    def around(original_method, callback)
-      if original_method.kind_of?(Array)
-        original_method.each {|method| callbacks[:around][method.to_sym] = callback.to_sym }
-      else
-        callbacks[:around][original_method.to_sym] = callback.to_sym
-      end
+    def around(original_method, *callbacks)
+      # if original_method.kind_of?(Array)
+      #         original_method.each {|method| callbacks[:around][method.to_sym] = callback.to_sym }
+      #       else
+      #         callbacks[:around][original_method.to_sym] = callback.to_sym
+      #       end
+      process_callback_set(:around, original_method, *callbacks)
     end
 
     def objectify_and_remove_method(method)
@@ -90,6 +91,10 @@ module SimpleAOP
   end
 
   def trigger_around_callback(method_name, &block)
+    self.class.callbacks[:around][method_name.to_sym].each do |callback|
+      
+    end
+  
     callback = self.class.callbacks[:around][method_name.to_sym]
     if callback && callback != []
       return send(callback) { block.call }

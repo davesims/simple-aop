@@ -86,13 +86,23 @@ describe SimpleAOP do
       @aop.with_default_arg("fu").should == "fu bar"
     end
     
-    it "should handle multiple filters" do 
+    it "should handle multiple before and after filters" do 
       @aop.should_receive(:test_one).once.ordered
       @aop.should_receive(:test_two).once.ordered
       @aop.should_receive(:test_three).once.ordered
       @aop.should_receive(:test_four).once.ordered
       @aop.should_receive(:test_five).once.ordered
       @aop.lots_o_filters
+    end
+    
+    it "should handle multiple around filters" do
+      @aop.should_receive(:before_around_one).once.ordered
+      @aop.should_receive(:before_around_two).once.ordered
+      @aop.should_receive(:middle).once.ordered
+      @aop.should_receive(:after_around_one).once.ordered
+      @aop.should_receive(:after_around_two).once.ordered
+      
+      @aop.multiple_around
     end
     
   end
@@ -103,6 +113,9 @@ class AOPClass
   
   before :other_method, :other_before_filter
   after :other_method, :other_after_filter
+  
+  around :multiple_around, :around_one
+  around :multiple_around, :around_two
   
   before [:test_one, :test_two, :test_three], :before_filter
   
@@ -137,6 +150,22 @@ class AOPClass
   end
   
   attr_accessor :local_value
+  
+  def multiple_around
+    middle
+  end
+  
+  def around_one
+    before_around_one
+    yield
+    after_around_one
+  end
+  
+  def around_two
+    before_around_two
+    yield
+    after_around_two
+  end
   
   def yield_method
     yield
@@ -173,6 +202,10 @@ class AOPClass
   
   def before_around; end
   def after_around; end
+  def before_around_one; end
+  def after_around_one; end
+  def before_around_two; end
+  def after_around_two; end
   def all_for_one; end
   def all_for_two; end
   def test_one
