@@ -86,10 +86,7 @@ module SimpleAOP
   end
   
   def trigger_callbacks(method_name, callback_type) 
-    case callback_type
-    when :before then self.class.callbacks[:before][method_name.to_sym].each{|callback| send callback}
-    when :after then self.class.callbacks[:after][method_name.to_sym].each{|callback| send callback}
-    end
+    self.class.callbacks[callback_type][method_name.to_sym].each{|callback| send callback}
   end
 
   def trigger_around_callback(method_name, &block)
