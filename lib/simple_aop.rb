@@ -1,3 +1,4 @@
+
 module SimpleAOP
 
   def self.included(klass)
