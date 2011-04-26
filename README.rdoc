@@ -1,7 +1,10 @@
 = A simple AOP framework for Ruby classes. 
 
 Originally written to eliminate code duplication like error trapping and logging from a non-rails Ruby application I was
-working on. Obviously inspired by Rails controller filters, but much less powerful at this point. Right now only 
+working on. I figured it might be useful to others in a non-rails context like Sinatra, who need something lightweight 
+with few dependencies. 
+
+SimpleAOP is obviously inspired by Rails controller filters, but much less powerful at this point. Right now only 
 works with instance methods, and doesn't support nested 'around' filters. I really need nested around filters, so 
 I'm working on that right now. 
 
