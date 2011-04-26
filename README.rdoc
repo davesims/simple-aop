@@ -60,7 +60,7 @@ SimpleAOP was cribbed and adapted from bits of DataMapper's callbacks/filters an
     around method
     end around
 
-= You can also pass arrays of methods to be filtered:
+You can also pass arrays of methods to be filtered:
 
   before [:test_one, :test_two, :test_three], :before_filter
   after [:test_one, :test_two, :test_three], :after_filter
