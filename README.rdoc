@@ -5,7 +5,7 @@ working on. Obviously inspired by Rails controller filters, but much less powerf
 works with instance methods, and doesn't support nested 'around' filters. I really need nested around filters, so 
 I'm working on that right now. 
 
-SimpleAOP was cribbed and adapted from bits of DataMapper's callbacks/filters and {this StackOverflow post}[http://stackoverflow.com/questions/1677861/how-to-implement-a-callback-in-ruby].
+SimpleAOP was cribbed and adapted from bits of DataMapper's callbacks/filters and {this StackOverflow comment}[http://stackoverflow.com/questions/1677861/how-to-implement-a-callback-in-ruby/3638771#3638771].
 
 
 = Examples
