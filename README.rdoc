@@ -1,0 +1,70 @@
+= A simple AOP framework for Ruby classes. 
+
+Originally written to eliminate code duplication like error trapping and logging from a non-rails Ruby application I was
+working on. I figured it might be useful to others in a non-rails context like Sinatra, who need something lightweight 
+with few dependencies. 
+
+SimpleAOP is obviously inspired by Rails controller filters, but much less powerful at this point. Right now only 
+works with instance methods, and doesn't support nested 'around' filters. I really need nested around filters, so 
+I'm working on that right now. 
+
+SimpleAOP was cribbed and adapted from bits of DataMapper's callbacks/filters and {this StackOverflow comment}[http://stackoverflow.com/questions/1677861/how-to-implement-a-callback-in-ruby/3638771#3638771].
+
+
+= Examples
+
+  class AOPClass 
+    include SimpleAOP
+   
+    before :before_method, :before_filter
+    after :after_method, :after_filter
+   
+    around :around_method, :around_filter
+  
+    def before_method
+  	puts "before method"
+    end
+  
+    def after_method
+      puts "after method"
+    end
+  
+    def before_filter
+  	puts "before filter"
+    end
+  
+    def after_filter
+      puts "after filter"
+    end
+  
+    def around_method
+  	puts "around method"
+    end
+  
+    def around_filter
+      puts "start around"
+      yield
+      puts "end around"
+    end
+  end
+  
+  aop = AOPClass.new
+  
+  aop.before_method => 
+    before filter
+    before method
+  
+  aop.after_method =>
+    after method
+    after filter
+  
+  aop.around_method =>
+    start around
+    around method
+    end around
+
+You can also pass arrays of methods to be filtered:
+
+  before [:test_one, :test_two, :test_three], :before_filter
+  after [:test_one, :test_two, :test_three], :after_filter
+  around [:test_one, :test_two], :around_filter
