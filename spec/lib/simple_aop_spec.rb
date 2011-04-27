@@ -99,8 +99,8 @@ describe SimpleAOP do
       @aop.should_receive(:before_around_one).once.ordered
       @aop.should_receive(:before_around_two).once.ordered
       @aop.should_receive(:middle).once.ordered
-      @aop.should_receive(:after_around_one).once.ordered
       @aop.should_receive(:after_around_two).once.ordered
+      @aop.should_receive(:after_around_one).once.ordered
       
       @aop.multiple_around
     end
