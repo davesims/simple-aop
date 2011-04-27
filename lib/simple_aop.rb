@@ -1,5 +1,8 @@
-module SimpleAOP
+require 'rubygems'
+require 'linker'
+require 'ap'
 
+module SimpleAOP
   def self.included(klass)
     klass.extend ClassMethods
     klass.initialize_included_features
@@ -9,7 +12,8 @@ module SimpleAOP
     
     def initialize_included_features
       @callbacks = Hash.new
-      @callbacks[:before] = Hash.new{|h,k| h[k] = []}
+      @callbacks[:before] = Hash.new { |h,k| h[k] = [] }
+      
       @callbacks[:after] = @callbacks[:before].clone
       @callbacks[:around] = @callbacks[:before].clone
       
@@ -31,15 +35,11 @@ module SimpleAOP
     end
 
     def store_callbacks(type, method_name, *callback_methods)
-      callbacks[type.to_sym][method_name.to_sym] += callback_methods.flatten.map(&:to_sym)
+      callbacks[type.to_sym][method_name.to_sym].add_and_link(callback_methods.flatten.map(&:to_sym))
     end
 
     def process_callback_set(type, original_method, *callbacks)
-      if original_method.kind_of?(Array)
-        original_method.each {|method| store_callbacks(type, method, *callbacks) }
-      else
-        store_callbacks(type, original_method, *callbacks)
-      end
+      Array(original_method).each {|method| store_callbacks(type, method, *callbacks) }
     end
     
     def before(original_method, *callbacks)
@@ -51,11 +51,6 @@ module SimpleAOP
     end
     
     def around(original_method, *callbacks)
-      # if original_method.kind_of?(Array)
-      #         original_method.each {|method| callbacks[:around][method.to_sym] = callback.to_sym }
-      #       else
-      #         callbacks[:around][original_method.to_sym] = callback.to_sym
-      #       end
       process_callback_set(:around, original_method, *callbacks)
     end
 
@@ -75,7 +70,7 @@ module SimpleAOP
       mod.class_eval do
         define_method(original_method.to_sym) do |*args, &block|
           trigger_callbacks(original_method, :before)
-          return_value = trigger_around_callback(original_method) do
+          return_value = trigger_around_callbacks(self.class.callbacks[:around][original_method.to_sym].first) do
             original.bind(self).call(*args, &block) if original
           end
           trigger_callbacks(original_method, :after)
@@ -90,16 +85,14 @@ module SimpleAOP
     self.class.callbacks[callback_type][method_name.to_sym].each{|callback| send callback}
   end
 
-  def trigger_around_callback(method_name, &block)
-    self.class.callbacks[:around][method_name.to_sym].each do |callback|
-      
-    end
-  
-    callback = self.class.callbacks[:around][method_name.to_sym]
-    if callback && callback != []
-      return send(callback) { block.call }
+  def trigger_around_callbacks(callback_method, &block)
+    return yield unless callback_method # there's no around callbacks, just call the original method
+    if callback_method.next
+      # outer around callbacks recurse until there's no more 'next'
+      send(callback_method) { trigger_around_callbacks(callback_method.next) { block.call }}
     else
-      return yield
+      # this is the innermost around callback which will call the filtered method in the given block
+      send(callback_method) { block.call }
     end
   end
  
