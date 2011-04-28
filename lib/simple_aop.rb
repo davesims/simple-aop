@@ -1,6 +1,4 @@
-require 'rubygems'
 require 'linker'
-require 'ap'
 
 module SimpleAOP
   def self.included(klass)
