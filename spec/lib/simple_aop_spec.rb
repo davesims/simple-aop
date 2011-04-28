@@ -107,7 +107,17 @@ describe SimpleAOP do
     
     it "should be able to call super in the context of a before filter" do
       TestBase.should_receive(:test_class_method)
-      @aop.test_super
+      @aop.test_super_before
+    end
+    
+    it "should be able to call super in the context of an after filter" do
+      TestBase.should_receive(:test_class_method)
+      @aop.test_super_after
+    end
+    
+    it "should be able to call super in the context of an around filter" do
+      TestBase.should_receive(:test_class_method)
+      @aop.test_super_around
     end
     
   end
@@ -115,7 +125,15 @@ end
 class TestBase
   def self.test_class_method; end
   
-  def test_super
+  def test_super_before
+    TestBase.test_class_method
+  end
+  
+  def test_super_after
+    TestBase.test_class_method
+  end
+  
+  def test_super_around
     TestBase.test_class_method
   end
 end
@@ -123,7 +141,9 @@ end
 class AOPClass < TestBase
   include SimpleAOP
   
-  before :test_super, :test_super_filter
+  before :test_super_before, :test_super_before_filter
+  after :test_super_after, :test_super_after_filter
+  around :test_super_around, :test_super_around_filter
   
   before :other_method, :other_before_filter
   after :other_method, :other_after_filter
@@ -159,11 +179,23 @@ class AOPClass < TestBase
   after :lots_o_filters, :test_four
   after :lots_o_filters, :test_five
   
-  def test_super
+  def test_super_before
     super
   end
   
-  def test_super_filter
+  def test_super_after
+    super
+  end
+  
+  def test_super_around
+    super
+  end
+  
+  def test_super_before_filter; end
+  def test_super_after_filter; end
+  
+  def test_super_around_filter
+    yield
   end
   
   def initialize
