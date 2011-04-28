@@ -4,7 +4,10 @@ class Symbol
   attr_accessor :next
 end
 
-# add an interface to Array to allow adding and linking symbols incrementally
+# Adds an interface to Array to allow adding and linking symbols incrementally
+# Behaves like '+' in that it will add a single object, or an array of objects
+# where each object in the given array is added individually, rather than adding 
+# the array as a single element. 
 class Array
   def add_and_link(value)
     Array(value).each do |item|

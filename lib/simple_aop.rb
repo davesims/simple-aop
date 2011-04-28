@@ -89,7 +89,7 @@ module SimpleAOP
       # outer around callbacks recurse until there's no more 'next'
       send(callback_method) { trigger_around_callbacks(callback_method.next) { block.call }}
     else
-      # this is the innermost around callback which will call the filtered method in the given block
+      # this is the innermost around callback which will call the original filtered method in the given block
       send(callback_method) { block.call }
     end
   end
