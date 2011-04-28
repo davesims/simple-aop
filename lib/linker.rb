@@ -5,9 +5,7 @@ class Symbol
 end
 
 # Adds an interface to Array to allow adding and linking symbols incrementally
-# Behaves like '+' in that it will add a single object, or an array of objects
-# where each object in the given array is added individually, rather than adding 
-# the array as a single element. 
+# Behaves like '+', i.e.: [1,2].add_and_link([3,4]) -> [1,2,3,4]
 class Array
   def add_and_link(value)
     Array(value).each do |item|
