@@ -10,10 +10,7 @@ module SimpleAOP
     
     def initialize_included_features
       @callbacks = Hash.new
-      @callbacks[:before] = Hash.new { |h,k| h[k] = [] }
-      
-      @callbacks[:after] = @callbacks[:before].clone
-      @callbacks[:around] = @callbacks[:before].clone
+      [:before, :after, :around].each {|filter| @callbacks[filter] = Hash.new { |h,k| h[k] = [] }}
       
       class << self
         attr_accessor :callbacks
