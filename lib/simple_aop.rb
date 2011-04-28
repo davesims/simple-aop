@@ -14,11 +14,8 @@ module SimpleAOP
       
       class << self
         attr_accessor :callbacks
+        attr_accessor :setting_callback
       end
-    end
-
-    def method_added(method)
-      redefine_method(method) if is_a_callback?(method)
     end
 
     def is_a_callback?(method)
@@ -48,6 +45,12 @@ module SimpleAOP
     def around(original_method, *callbacks)
       process_callback_set(:around, original_method, *callbacks)
     end
+    
+    def method_added(method)
+      if !setting_callback
+        redefine_method(method) if is_a_callback?(method) 
+      end
+    end
 
     def objectify_and_remove_method(method)
       if method_defined?(method.to_sym)
@@ -61,18 +64,18 @@ module SimpleAOP
 
     def redefine_method(original_method)
       original = objectify_and_remove_method(original_method)
-      mod = Module.new
-      mod.class_eval do
-        define_method(original_method.to_sym) do |*args, &block|
-          trigger_callbacks(original_method, :before)
-          return_value = trigger_around_callbacks(self.class.callbacks[:around][original_method.to_sym].first) do
-            original.bind(self).call(*args, &block) if original
-          end
-          trigger_callbacks(original_method, :after)
-          return_value
+      @setting_callback = true
+ 
+      define_method(original_method.to_sym) do |*args, &block|
+        trigger_callbacks(original_method, :before)
+        return_value = trigger_around_callbacks(self.class.callbacks[:around][original_method.to_sym].first) do
+          original.bind(self).call(*args, &block) if original
         end
+        trigger_callbacks(original_method, :after)
+        return_value
       end
-      include mod
+        
+      @setting_callback = false
     end
   end
   
@@ -81,7 +84,7 @@ module SimpleAOP
   end
 
   def trigger_around_callbacks(callback_method, &block)
-    return yield unless callback_method # there's no around callbacks, just call the original method
+    return block.call unless callback_method # there's no around callbacks, just call the original method
     if callback_method.next
       # outer around callbacks recurse until there's no more 'next'
       send(callback_method) { trigger_around_callbacks(callback_method.next) { block.call }}

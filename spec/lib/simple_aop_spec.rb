@@ -105,11 +105,25 @@ describe SimpleAOP do
       @aop.multiple_around
     end
     
+    it "should be able to call super in the context of a before filter" do
+      TestBase.should_receive(:test_class_method)
+      @aop.test_super
+    end
+    
+  end
+end
+class TestBase
+  def self.test_class_method; end
+  
+  def test_super
+    TestBase.test_class_method
   end
 end
 
-class AOPClass 
+class AOPClass < TestBase
   include SimpleAOP
+  
+  before :test_super, :test_super_filter
   
   before :other_method, :other_before_filter
   after :other_method, :other_after_filter
@@ -144,6 +158,13 @@ class AOPClass
   before :lots_o_filters, :test_three
   after :lots_o_filters, :test_four
   after :lots_o_filters, :test_five
+  
+  def test_super
+    super
+  end
+  
+  def test_super_filter
+  end
   
   def initialize
     @local_value = "local test value"
