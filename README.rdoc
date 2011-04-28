@@ -68,18 +68,25 @@ SimpleAOP was cribbed and adapted from bits of DataMapper's callbacks/filters an
   
   aop = AOPClass.new
   
-  aop.before_method => 
-    before filter
-    before method
+  aop.before_method 
+  -> before filter
+  -> before method
   
-  aop.after_method =>
-    after method
-    after filter
+  aop.after_method
+  -> after method
+  -> after filter
   
-  aop.around_method =>
-    start around
-    around method
-    end around
+  aop.around_method
+  -> start around
+  -> around method
+  -> end around
+
+  aop.multiple_around
+  -> start around one
+  -> start around two
+  -> multi-around
+  -> end around two
+  -> end around one
 
 You can also pass arrays of methods to be filtered:
 
